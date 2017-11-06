@@ -1,1 +1,1 @@
-# formula1-monitor
+# TechnionFormulaGUI
