@@ -11,16 +11,13 @@ import java.io.PrintStream;
 import static java.lang.Double.parseDouble;
 import static java.lang.System.exit;
 import java.util.List;
-import java.util.StringTokenizer;
 import static java.util.logging.Logger.getLogger;
 import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 import static javax.swing.JOptionPane.showMessageDialog;
-import static javax.swing.JOptionPane.showMessageDialog;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import static javax.swing.UIManager.getInstalledLookAndFeels;
-import static javax.swing.UIManager.setLookAndFeel;
 import static javax.swing.UIManager.setLookAndFeel;
 
 
@@ -427,7 +424,6 @@ public final class MainFrame extends javax.swing.JFrame {
     private Timer timer;
     public final static int FIELDS_NUMBER = 13;
     final static int DELAY = 500;
-    private boolean foundCOM = false;
     // Variables declaration - do not modify                     
     private eu.hansolo.steelseries.gauges.FrameRectangular acceleration;
     private eu.hansolo.steelseries.gauges.DigitalRadialLcd digitalRadialLcd1;
