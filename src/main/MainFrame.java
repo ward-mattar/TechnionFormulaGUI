@@ -1,20 +1,26 @@
 package main;
 
 import static java.awt.EventQueue.invokeLater;
-import java.awt.event.WindowEvent;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowEvent;
+import java.io.BufferedOutputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import static java.lang.Double.parseDouble;
 import static java.lang.System.exit;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.StringTokenizer;
 import static java.util.logging.Logger.getLogger;
-import javax.swing.Timer;
+import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 import static javax.swing.JOptionPane.showMessageDialog;
+import static javax.swing.JOptionPane.showMessageDialog;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 import static javax.swing.UIManager.getInstalledLookAndFeels;
+import static javax.swing.UIManager.setLookAndFeel;
 import static javax.swing.UIManager.setLookAndFeel;
 
 
@@ -24,49 +30,75 @@ public final class MainFrame extends javax.swing.JFrame {
      * Creates new form MainFrame
      */
     public MainFrame() {
+        setUpOutputStream();
         initComponents();
         inialize();
     }
+
+    public void issueErrorMessage(final String msg){
+        System.err.print(msg);
+        showMessageDialog(errorPanel, msg, "Error", JOptionPane.OK_OPTION);
+    }
+    
+    public void setUpOutputStream(){
+        try {
+            PrintStream s = makeStream(LOG_PATH);
+            System.setOut(s);
+            System.setErr(s);
+        } catch (FileNotFoundException ex) {
+            System.out.printf("Could not open %s for logging\r\n", LOG_PATH);
+        }
+    }
+    
     public void inialize(){
         setSize(1360,830);
         setResizable(false);
-        
         try {
             // Uncomment following line to simulate reading data from a file 
             // presentationReader = new CSVReader("presentation.csv");
-            dataReader = new DataReader("log.txt");
-            foundCOM = true;
-        } catch (InterruptedException e){ 
-            e.printStackTrace();
-            exit(1);
-        } catch (SerialReaderError e){ 
-            System.out.println("Serial COM port initialization failed - terminating GUI");
-            showMessageDialog(errorPanel, "Could not find COM device", "Error", JOptionPane.OK_OPTION);
-            if (foundCOM == false) {
-                exit(1);
-            }
+            dataReader = new DataReader(DATA_LOG_PATH);
+        } catch (SerialReaderException | InterruptedException e){
+            issueErrorMessage("Could not detect COM port!\r\n" + e.toString());
+            exit(0);
+        } catch(Exception e){
+            issueErrorMessage("Unexpected exception caught!\r\n" + e.toString());
+            exit(0);
+        } catch (Error er){
+            issueErrorMessage("Error: " + er.toString());
+            exit(0);
         }
         
+        System.out.printf("Initializing COM port was successful, using: %s\r\n", dataReader.getPortName());
+        System.out.printf("File %s used for logging data captured\r\n", DATA_LOG_PATH);
+        System.out.printf("Started listening to data\r\n");
+        
         timer = new Timer(DELAY, (ActionEvent e) -> {
-            List<String> currentInfo = null;
+            List<String> currentInfo;
             if (presentationReader != null){
                 try {
                     currentInfo = presentationReader.getNextRecordLine();
                 } catch (IOException ex) {
-                    Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                    issueErrorMessage("Could not read from presentation file!\r\n" + ex.getMessage());
+                    timer.stop();
+                    return;
                 }
             } else if (dataReader != null){
                 currentInfo = dataReader.getNextLineList();
-                if (currentInfo == null || currentInfo.isEmpty())
-                    return;
-                System.out.println(dataReader.getNextLineString());
             } else {
                 timer.stop();
                 return;
             }
     
-            if(currentInfo == null || currentInfo.size() != FIELDS_NUMBER)
+            if(currentInfo == null)
                 return;
+            
+            if(currentInfo.size() != FIELDS_NUMBER){
+                System.out.println(dataReader.getNextLineString());
+                return;
+            }
+            
+            dataReader.log(dataReader.getNextLineString());
+            
             susRF.setText(currentInfo.get(0));
             susRR.setText(currentInfo.get(1));
             susLF.setText(currentInfo.get(2));
@@ -86,6 +118,9 @@ public final class MainFrame extends javax.swing.JFrame {
         });
         timer.start();
     }
+    
+    private static final String LOG_PATH = "log.txt";
+    private static final String DATA_LOG_PATH = "data.txt";
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -94,6 +129,39 @@ public final class MainFrame extends javax.swing.JFrame {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
     private void initComponents() {
+        // checking that the SteelSeries, Lightbulb and RXTX classes are found
+        try {
+            Class.forName("eu.hansolo.steelseries.gauges.Radial1Vertical");
+        } catch(ClassNotFoundException e) {
+            issueErrorMessage("Could not find SteelSeries library!\r\n" + e.getMessage());
+            exit(0);
+        }
+        try {
+            Class.forName("eu.hansolo.lightbulb.LightBulb");
+        } catch(ClassNotFoundException e) {
+            issueErrorMessage("Could not find LightBulb library!\r\n" + e.getMessage());
+            exit(0);
+        }
+    
+        try {
+            Class.forName("gnu.io.RXTXVersion");
+        } catch(ClassNotFoundException e) {
+            issueErrorMessage("Could not find RXTX library!\r\n" + e.getMessage());
+            exit(0);
+        }
+        
+        try {
+            System.loadLibrary("rxtxSerial");
+        } catch (UnsatisfiedLinkError e) {
+            if(!e.getMessage().contains("already")) {
+                issueErrorMessage("Native code for rxtxSerial.dll failed to load!\r\n" + e + 
+                        "\r\nPlease make sure rxtxSerial.dll is found in environmental variable PATH:"
+                          + Pattern.compile(";").splitAsStream(System.getProperty("java.library.path"))
+                                                .map(l -> l +"\r\n")
+                                                .reduce("", String::concat));
+                exit(0);
+            }
+        } 
 
         sWTToolkitHandler1 = new org.pushingpixels.trident.swt.SWTToolkitHandler();
         velocity = new eu.hansolo.steelseries.gauges.Radial4Lcd();
@@ -118,7 +186,7 @@ public final class MainFrame extends javax.swing.JFrame {
         label3 = new java.awt.Label();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
+        
         velocity.setDoubleBuffered(true);
         velocity.setName("velocity"); // NOI18N
         velocity.setTitle("Avg Speed");
@@ -157,7 +225,6 @@ public final class MainFrame extends javax.swing.JFrame {
         gear.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         gear.setText("1");
         gear.setName("gear"); // NOI18N
-        gear.addActionListener(this::gearActionPerformed);
 
         oilAlert.setGlowColor(new java.awt.Color(255, 0, 0));
         oilAlert.setName("oilAlert"); // NOI18N
@@ -315,10 +382,7 @@ public final class MainFrame extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>                        
-
-    private void gearActionPerformed(java.awt.event.ActionEvent evt) {                                     
-        // TODO add your handling code here:
-    }                                    
+                                    
 
     /**
      * @param args the command line arguments
@@ -345,18 +409,21 @@ public final class MainFrame extends javax.swing.JFrame {
         invokeLater(() -> {
             new MainFrame().setVisible(true);
         });
-    }    
+    }  
+    protected PrintStream makeStream(String name) throws FileNotFoundException {
+       return new PrintStream(new BufferedOutputStream(new FileOutputStream(name)), true);
+   }
    public void windowClosed(WindowEvent e) {
        try {
            dataReader.done();
        } catch(IOException e2){
            
        }
-       
+       exit(0);
    }
     final JPanel errorPanel = new JPanel();
-    private CSVReader presentationReader = null;
-    private DataReader dataReader = null;
+    private CSVReader presentationReader;
+    private DataReader dataReader;
     private Timer timer;
     public final static int FIELDS_NUMBER = 13;
     final static int DELAY = 500;

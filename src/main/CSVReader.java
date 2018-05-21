@@ -44,14 +44,20 @@ public class CSVReader {
 	}
 	
 	public String getNextRecordString(){
-		return currentLine.stream()
+		return currentLine == null ? "" : 
+                        currentLine.stream()
                         .map((item) -> item + " ")
                         .reduce("", String::concat)
                         .trim();
 	}
 	
+        public Stream<String> getAllLines(){
+            return lines;
+        }
+        
 	public void done() throws IOException{
-		fr.close();
+		if(fr != null)
+                    fr.close();
 	}
 	private List<String> currentLine;
 	private final FileReader fr;

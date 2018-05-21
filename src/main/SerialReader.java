@@ -71,10 +71,10 @@ public final class SerialReader implements SerialPortEventListener {
         }
     }
     
-    public SerialReader() throws InterruptedException, SerialReaderError {
+    public SerialReader() throws InterruptedException, SerialReaderException {
         int turn = 1;
         while(turn++ <= ATTEMPTS) {
-            for(Integer portNumber = 3; portNumber <= 15; portNumber++){
+            for(Integer portNumber = 1; portNumber <= 15; portNumber++){
                 // looking for valid COM port - Windows only
                 PORT_NAMES[2] = "COM" + portNumber.toString();        
                 try {
@@ -89,11 +89,11 @@ public final class SerialReader implements SerialPortEventListener {
                 System.out.println("Serial COM intiated");
                 return;
             } else {
-                System.out.printf("Serial COM could not be intiated... attempt: %d\n", turn);
+                System.out.printf("Serial COM could not be intiated... attempt: %d\r\n", turn);
             }
             sleep(SLEEP_TIME);
         }
-        //throw new SerialReaderError();
+        throw new SerialReaderException();
     }
  
      public synchronized String readLine(){
@@ -104,6 +104,10 @@ public final class SerialReader implements SerialPortEventListener {
         } catch(IOException e){
             return "";
         }
+    }
+     
+    public synchronized String getWindowsPortName(){
+        return serialPort != null ? PORT_NAMES[2] : "N/A"; 
     }
 }
 
