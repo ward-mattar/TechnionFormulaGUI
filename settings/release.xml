@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch4jConfig>
+  <dontWrapJar>false</dontWrapJar>
+  <headerType>gui</headerType>
+  <jar>C:\Users\Ward\Documents\NetBeansProjects\TechnionFormulaGUI\dist\Formula1GUI.jar</jar>
+  <outfile>C:\Users\Ward\Documents\NetBeansProjects\TechnionFormulaGUI\dist\Technion Formula GUI.exe</outfile>
+  <errTitle></errTitle>
+  <cmdLine></cmdLine>
+  <chdir></chdir>
+  <priority>normal</priority>
+  <downloadUrl>http://java.com/download</downloadUrl>
+  <supportUrl></supportUrl>
+  <stayAlive>false</stayAlive>
+  <restartOnCrash>false</restartOnCrash>
+  <manifest></manifest>
+  <icon>C:\Users\Ward\Documents\NetBeansProjects\TechnionFormulaGUI\resources\icon.ico</icon>
+  <singleInstance>
+    <mutexName>Formula1GUI</mutexName>
+    <windowTitle>Technion Formula Telemtry</windowTitle>
+  </singleInstance>
+  <classPath>
+    <mainClass>main.MainFrame</mainClass>
+    <cp>lib\SteelSeries\LightBulb.jar</cp>
+    <cp>lib\SteelSeries\SteelSeries.jar</cp>
+    <cp>lib\SteelSeries\SteelCheckBox.jar</cp>
+    <cp>lib\SteelSeries\swing-layout-1.0.2.jar</cp>
+    <cp>lib\SteelSeries\trident.jar</cp>
+    <cp>lib\RXTXcomm\RXTXcomm.jar</cp>
+    <cp>lib\RXTXcomm\rxtx-2.1.7.jar</cp>
+  </classPath>
+  <jre>
+    <path></path>
+    <bundledJre64Bit>false</bundledJre64Bit>
+    <bundledJreAsFallback>false</bundledJreAsFallback>
+    <minVersion>1.8</minVersion>
+    <maxVersion></maxVersion>
+    <jdkPreference>preferJre</jdkPreference>
+    <runtimeBits>64/32</runtimeBits>
+  </jre>
+  <splash>
+    <file>C:\Users\Ward\Documents\NetBeansProjects\TechnionFormulaGUI\resources\splash.bmp</file>
+    <waitForWindow>true</waitForWindow>
+    <timeout>10</timeout>
+    <timeoutErr>false</timeoutErr>
+  </splash>
+  <messages>
+    <startupErr>An error occurred while starting the application.</startupErr>
+    <bundledJreErr>This application was configured to use a bundled Java Runtime Environment but the runtime is missing or corrupted.</bundledJreErr>
+    <jreVersionErr>This application requires a Java Runtime Environment</jreVersionErr>
+    <launcherErr>The registry refers to a nonexistent Java Runtime Environment installation or the runtime is corrupted.</launcherErr>
+    <instanceAlreadyExistsMsg>An application instance is already running.</instanceAlreadyExistsMsg>
+  </messages>
+</launch4jConfig>
